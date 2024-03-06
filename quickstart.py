@@ -1,5 +1,6 @@
 import os.path
 import time
+
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -8,6 +9,7 @@ from googleapiclient.errors import HttpError
 from selenium import webdriver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.select import Select
 
 #[ ATRIBUTOS ] <-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -16,8 +18,8 @@ from selenium.webdriver.common.by import By
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
 # The ID and range of a sample spreadsheet.
-SAMPLE_SPREADSHEET_ID = "1gH4ucQkpRfPh4o5fOaRLfKCqQYZE6FnUmurysEBrmk8"
-SAMPLE_RANGE_NAME = "BD_OUTUBRO_ROSA!A1:Q"
+SAMPLE_SPREADSHEET_ID = "1CJXTTrmaWSNTQnKD6oeLw9lGxEBNjz05S50L0MPLNLA"
+SAMPLE_RANGE_NAME = "BD_HIGIENIZACAO!A2:D"
 
 navegador = webdriver.Chrome()
 campo_login_inicial = '//*[@id="login_name"]'
@@ -90,14 +92,13 @@ logarGLPI()
 for i, chamadoID in enumerate(getPlanilhaGeral()):
   if(i > 0):
     linha = 0
-    if(chamadoID[9] == "SIM"):
+    if(chamadoID[3] == "SIM"):
       print("Linha já conferida:"+ chamadoID[9], i)
       continue
 
-    elif(chamadoID[9] == "NÃO"):
-      print("Linha sendo conferida:"+ chamadoID[9], i)
-      print("Entrando no chamado do GLPI de ID: "+chamadoID[2], i)
-      navegador.get("https://novoglpi.sms.maceio.al.gov.br/front/ticket.form.php?id="+chamadoID[2])
+    elif(chamadoID[3] == "NÃO"):
+      print("Entrando no chamado do GLPI de ID: "+chamadoID[0], i)
+      navegador.get("https://novoglpi.sms.maceio.al.gov.br/front/ticket.form.php?id="+chamadoID[0])
       if(navegador.find_elements(By.XPATH, "//*[contains(text(), 'Item não encontrado')]")):
         continue
 
@@ -109,11 +110,24 @@ for i, chamadoID in enumerate(getPlanilhaGeral()):
       tentativas = 0
       while(validandoCNS == False):
         numeroCNS = navegador.find_element(By.NAME, "cnfield").get_attribute('value')
-        if(str(numeroCNS) == str(chamadoID[4])):
-          print("CNS correto: "+chamadoID[4], numeroCNS)
+        statusHigienizacao = navegador.find_element(By.NAME, "plugin_fields_statushigienizaofielddropdowns_id").get_attribute('value')
+        print("STATUS HIGIENIZAÇÃO:"+ statusHigienizacao)
+        #navegador.find_element(By.NAME, "plugin_fields_statushigienizaofielddropdowns_id").find_element(By.CLASS_NAME, "select2 select2-container select2-container--default").click()
+        
+        statusHigienizacao = navegador.find_element(By.NAME, "Status Higienização").find_element(By.CLASS_NAME, "col-xxl-8  field-container").click()
+        selecione = Select(statusHigienizacao)
+        selecione.select_by_visible_text('Chamado higienizado')
+
+
+        statusHigienizacao = navegador.find_element(By.NAME, "plugin_fields_statushigienizaofielddropdowns_id").get_attribute('value')
+        print("STATUS HIGIENIZAÇÃO:"+ statusHigienizacao)
+
+        print("STATUS HIGIENIZAÇÃO:"+ statusHigienizacao)
+        if(str(numeroCNS) == str(chamadoID[2])):
+          print("CNS correto: "+chamadoID[2], numeroCNS)
           validandoCNS = True
-        elif(str(numeroCNS) != str(chamadoID[4])):
-          print("CNS diferente: "+chamadoID[4], numeroCNS)          
+        elif(str(numeroCNS) != str(chamadoID[2])):
+          print("CNS diferente: "+chamadoID[2], numeroCNS)          
           validandoCNS = False        
           navegador.refresh()
           tentativas+=1
@@ -129,12 +143,12 @@ for i, chamadoID in enumerate(getPlanilhaGeral()):
         valor = navegador.find_element(By.XPATH, '//*[@id="page"]/div/div/div[2]/div[1]/h3').text
 
         if(valor.find(chamadoID[2]) != -1):
-          print('Entrou no chamado do GLPI id:'+chamadoID[2])
+          print('Entrou no chamado do GLPI id:'+chamadoID[0])
           time.sleep(10)
 
           if(navegador.find_elements(By.XPATH, '/html/body/div[14]')):
             print('Página carregada por completo!')
-            dataAberturaChamado = navegador.find_element(By.XPATH, '//*[@id="item-main"]/div/div[3]/div').find_element(By.NAME, 'date').get_attribute('value')
+            dataAberturaChamado = navegador.find_element(By.XPATH, '//*[@id="plugin_fields_container_1853565001"]/div[10]/div/div/span[1]/span[1]/span').get_attribute('value')
             print(dataAberturaChamado)
 
             chamadoStatus = navegador.find_element(By.XPATH, '//*[@id="heading-main-item"]/button/span[1]/i').get_attribute('data-bs-original-title')
@@ -147,11 +161,11 @@ for i, chamadoID in enumerate(getPlanilhaGeral()):
             print(marcado)
 
             prestador = navegador.find_element(By.NAME, 'prestadorfield').get_attribute('value')
-            print(prestador)        
+            print(prestador)
 
             linha = i+1
-            print("Dados inseridos na Aba: BD_OUTUBRO_ROSA! - Linha: K"+str(linha))
-            setCelulaPlanilha('BD_OUTUBRO_ROSA!', 'K'+str(linha), [[valor, numeroCNS, dataAberturaChamado, chamadoStatus, marcado, dataRealizacao, prestador]])
+            #print("Dados inseridos na Aba: BD_HIGIENIZACAO! - Linha: D"+str(linha))
+            setCelulaPlanilha('BD_HIGIENIZACAO!', 'D'+str(linha), [["SIM"]])
           else:
             print("Página não carregou por completo, atualizando-a")      
             #Refresh e verificar
@@ -162,7 +176,7 @@ for i, chamadoID in enumerate(getPlanilhaGeral()):
         print(valor)
     else:
       print("Linha deu erro:"+ chamadoID[9], i)
-      setCelulaPlanilha('BD_OUTUBRO_ROSA!', 'J'+str(linha), [["ERRO"]])
+      setCelulaPlanilha('BD_HIGIENIZACAO!', 'D'+str(linha), [["ERRO"]])
       continue
 
 print('Programa Finalizado')
