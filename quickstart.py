@@ -113,10 +113,10 @@ for i, chamadoID in enumerate(getPlanilhaGeral()):
         statusHigienizacao = navegador.find_element(By.NAME, "plugin_fields_statushigienizaofielddropdowns_id").get_attribute('value')
         print("STATUS HIGIENIZAÇÃO:"+ statusHigienizacao)
         #navegador.find_element(By.NAME, "plugin_fields_statushigienizaofielddropdowns_id").find_element(By.CLASS_NAME, "select2 select2-container select2-container--default").click()
-        
-        statusHigienizacao = navegador.find_element(By.NAME, "Status Higienização").find_element(By.CLASS_NAME, "col-xxl-8  field-container").click()
+        #navegador.find_element(By.NAME, "plugin_fields_statushigienizaofielddropdowns_id").click()
+        statusHigienizacao = navegador.find_element(By.NAME, "plugin_fields_statushigienizaofielddropdowns_id")
         selecione = Select(statusHigienizacao)
-        selecione.select_by_visible_text('Chamado higienizado')
+        selecione.select_by_visible_text('Chamado higienizado - ')
 
 
         statusHigienizacao = navegador.find_element(By.NAME, "plugin_fields_statushigienizaofielddropdowns_id").get_attribute('value')
