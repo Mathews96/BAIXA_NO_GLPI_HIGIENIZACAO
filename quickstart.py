@@ -10,6 +10,7 @@ from selenium import webdriver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
+from selenium.webdriver import Keys
 
 #[ ATRIBUTOS ] <-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -109,20 +110,27 @@ for i, chamadoID in enumerate(getPlanilhaGeral()):
 
       tentativas = 0
       while(validandoCNS == False):
-        numeroCNS = navegador.find_element(By.NAME, "cnfield").get_attribute('value')
-        statusHigienizacao = navegador.find_element(By.NAME, "plugin_fields_statushigienizaofielddropdowns_id").get_attribute('value')
-        print("STATUS HIGIENIZAÇÃO:"+ statusHigienizacao)
-        #navegador.find_element(By.NAME, "plugin_fields_statushigienizaofielddropdowns_id").find_element(By.CLASS_NAME, "select2 select2-container select2-container--default").click()
-        #navegador.find_element(By.NAME, "plugin_fields_statushigienizaofielddropdowns_id").click()
-        statusHigienizacao = navegador.find_element(By.NAME, "plugin_fields_statushigienizaofielddropdowns_id")
-        selecione = Select(statusHigienizacao)
-        selecione.select_by_visible_text('Chamado higienizado - ')
+        #campoAgenteComunitario = navegador.find_element(By.XPATH, "//div[@data-select2-id='68']")
+        #campoAgenteComunitario2 = campoAgenteComunitario.send_keys(Keys.SPACE)
+
+        #navegador.find_element(By.XPATH, "//div[9]//span[@title='-----']").click()
+        #navegador.find_element(By.XPATH, "//div[9]//span[@role='combobox']").click()
+        campoClassificaoRisco = navegador.find_element(By.XPATH, "//div[9]//select[@name='plugin_fields_classificaoderiscofielddropdowns_id']")
+        campoClassificaoRisco.send_keys(Keys.SPACE)
+        campoClassificaoRisco.send_keys(Keys.ARROW_DOWN)
+        campoClassificaoRisco.send_keys(Keys.ENTER)
+        statusHigienizacao = navegador.find_element(By.XPATH, "//div[9]//select[@name='plugin_fields_classificaoderiscofielddropdowns_id']")
+        selecione = Select(statusHigienizacao)        
+        #selecione.select_by_index(4)
+
+        # Obtenha todas as opções do elemento <select>
+        opcoes = selecione.options
+
+        # Itere sobre as opções e imprima o texto de cada opção
+        for opcao in opcoes:
+            print(opcao.text)
 
 
-        statusHigienizacao = navegador.find_element(By.NAME, "plugin_fields_statushigienizaofielddropdowns_id").get_attribute('value')
-        print("STATUS HIGIENIZAÇÃO:"+ statusHigienizacao)
-
-        print("STATUS HIGIENIZAÇÃO:"+ statusHigienizacao)
         if(str(numeroCNS) == str(chamadoID[2])):
           print("CNS correto: "+chamadoID[2], numeroCNS)
           validandoCNS = True
@@ -136,9 +144,7 @@ for i, chamadoID in enumerate(getPlanilhaGeral()):
           if(tentativas == 3):
             tentativas = 0 
             break
-
           
-
       if(navegador.find_elements(By.XPATH, value='//*[@id="page"]/div/div/div[2]/div[1]/h3')):
         valor = navegador.find_element(By.XPATH, '//*[@id="page"]/div/div/div[2]/div[1]/h3').text
 
