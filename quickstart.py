@@ -110,26 +110,11 @@ for i, chamadoID in enumerate(getPlanilhaGeral()):
 
       tentativas = 0
       while(validandoCNS == False):
-        #campoAgenteComunitario = navegador.find_element(By.XPATH, "//div[@data-select2-id='68']")
-        #campoAgenteComunitario2 = campoAgenteComunitario.send_keys(Keys.SPACE)
-
-        #navegador.find_element(By.XPATH, "//div[9]//span[@title='-----']").click()
-        #navegador.find_element(By.XPATH, "//div[9]//span[@role='combobox']").click()
-        campoClassificaoRisco = navegador.find_element(By.XPATH, "//div[9]//select[@name='plugin_fields_classificaoderiscofielddropdowns_id']")
+        campoClassificaoRisco = navegador.find_element(By.XPATH, "//div[9]//select[@name='plugin_fields_statushigienizaofielddropdowns_id']")
         campoClassificaoRisco.send_keys(Keys.SPACE)
-        campoClassificaoRisco.send_keys(Keys.ARROW_DOWN)
-        campoClassificaoRisco.send_keys(Keys.ENTER)
-        statusHigienizacao = navegador.find_element(By.XPATH, "//div[9]//select[@name='plugin_fields_classificaoderiscofielddropdowns_id']")
-        selecione = Select(statusHigienizacao)        
-        #selecione.select_by_index(4)
 
-        # Obtenha todas as opções do elemento <select>
-        opcoes = selecione.options
-
-        # Itere sobre as opções e imprima o texto de cada opção
-        for opcao in opcoes:
-            print(opcao.text)
-
+        itemSelecionado = navegador.find_element(By.XPATH, "//li//*[@class='select2-results__option']//*[@title='Chamado higienizado - ']")
+        itemSelecionado.click()
 
         if(str(numeroCNS) == str(chamadoID[2])):
           print("CNS correto: "+chamadoID[2], numeroCNS)
