@@ -140,31 +140,34 @@ for i, chamadoID in enumerate(getPlanilhaGeral()):
 
           aguardandoCampoNascimento = WebDriverWait(navegador, 10)
           aguardandoCampoNascimento.until(EC.visibility_of_element_located((By.XPATH, "//*[contains(text(), 'Data de Nascimento')] ")))
+          time.sleep(10)
 
           try:
-            campoStatusHigienizao = navegador.find_element(By.XPATH, "//*[@name='plugin_fields_statushigienizaofielddropdowns_id']")
+            campoStatusHigienizao =navegador.find_element(By.XPATH, "//div[10]//div[1]//div[1]//span//*[@class='select2-selection select2-selection--single']")
             campoStatusHigienizao.send_keys(Keys.SPACE)            
 
-            aguardandoListaSuspensa = WebDriverWait(navegador, 10)
-            aguardandoListaSuspensa.until(EC.visibility_of_element_located((By.XPATH, "//*[@title='Chamado higienizado - ']")))
+            #aguardandoListaSuspensa = WebDriverWait(navegador, 10)
+            #aguardandoListaSuspensa.until(EC.visibility_of_element_located((By.XPATH, "//*[@title='Chamado higienizado - ']")))
+            time.sleep(10)
 
             try:
               itemSelecionado = navegador.find_element(By.XPATH, "//*[@title='Chamado higienizado - ']")
               itemSelecionado.click()
+
             except TimeoutException:
               print("Erro ao abrir a lista suspensa!")
               continue
 
             navegador.find_element(By.NAME, "update").click()
             
-            aguardandoAtualizarpagina = WebDriverWait(navegador, 20)
-            aguardandoAtualizarpagina.until(EC.visibility_of_element_located((By.XPATH, "//*[@name='plugin_fields_statushigienizaofielddropdowns_id']//option[@title='Chamado higienizado - ']"))) 
-            try:        
-              linha = i+1
-              setCelulaPlanilha('BD_HIGIENIZACAO!', 'D'+str(linha), [["SIM"]])
-            except TimeoutException:
-              print("Erro ao atualizar a página!")
-              continue
+            #aguardandoAtualizarpagina = WebDriverWait(navegador, 20)
+            #aguardandoAtualizarpagina.until(EC.visibility_of_element_located((By.XPATH, "//*[@name='plugin_fields_statushigienizaofielddropdowns_id']//option[@title='Chamado higienizado - ']"))) 
+            #try:        
+            linha = i+1
+            setCelulaPlanilha('BD_HIGIENIZACAO!', 'D'+str(linha), [["SIM"]])
+            #except TimeoutException:
+              #print("Erro ao atualizar a página!")
+              #continue
 
           except TimeoutException:          
             print('Não entrou no chamado do GLPI id:'+chamadoID[2])
