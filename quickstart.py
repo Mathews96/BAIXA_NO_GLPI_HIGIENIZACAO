@@ -112,22 +112,29 @@ for i, chamadoID in enumerate(getPlanilhaGeral()):
       numeroCNS = 00000000000000
 
       tentativas = 0
-      while(validandoCNS == False):        
-        numeroCNS = navegador.find_element(By.NAME, "cnfield").get_attribute('value')
-        print(" | 0: "+chamadoID[0]+" | 1: "+chamadoID[1]+" | 2: "+chamadoID[2]+" | 3: "+chamadoID[3])
-        if(str(numeroCNS) == str(chamadoID[2])):
-          print("CNS correto: "+chamadoID[2], numeroCNS)
-          validandoCNS = True
-        elif(str(numeroCNS) != str(chamadoID[2])):
-          print("CNS diferente: "+chamadoID[2], numeroCNS)          
-          validandoCNS = False        
-          navegador.refresh()
-          tentativas+=1
-          time.sleep(5)
+      while(validandoCNS == False):    
+        #inserir para aguardar o elemento aparecer    
+        numeroCNS = WebDriverWait(navegador, 10).until(EC.visibility_of_element_located((By.NAME, "cnfield")))
+        #numeroCNS = navegador.find_element(By.NAME, "cnfield").get_attribute('value')
+        try:
+          numeroCNS.get_attribute('value')
+          print(" | 0: "+chamadoID[0]+" | 1: "+chamadoID[1]+" | 2: "+chamadoID[2]+" | 3: "+chamadoID[3])
+          if(str(numeroCNS) == str(chamadoID[2])):
+            print("CNS correto: "+chamadoID[2], numeroCNS)
+            validandoCNS = True
+          elif(str(numeroCNS) != str(chamadoID[2])):
+            print("CNS diferente: "+chamadoID[2], numeroCNS)          
+            validandoCNS = False        
+            navegador.refresh()
+            tentativas+=1
+            time.sleep(5)
 
-          if(tentativas == 3):
-            tentativas = 0 
-            break
+            if(tentativas == 3):
+              tentativas = 0 
+              break         
+             
+        except TimeoutException:
+          continue          
 
       if(navegador.find_elements(By.XPATH, value='//*[@id="page"]/div/div/div[2]/div[1]/h3')):
         valor = navegador.find_element(By.XPATH, '//*[@id="page"]/div/div/div[2]/div[1]/h3').text
