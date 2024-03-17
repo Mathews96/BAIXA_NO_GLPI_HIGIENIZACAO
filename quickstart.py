@@ -1,5 +1,6 @@
 import os.path
 import time
+import datetime
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -23,7 +24,7 @@ SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 
 # The ID and range of a sample spreadsheet.
 SAMPLE_SPREADSHEET_ID = "1CJXTTrmaWSNTQnKD6oeLw9lGxEBNjz05S50L0MPLNLA"
-SAMPLE_RANGE_NAME = "BD_HIGIENIZACAO!A2:D"
+SAMPLE_RANGE_NAME = "BD_HIGIENIZACAO!A2:G"
 
 navegador = webdriver.Chrome()
 campo_login_inicial = '//*[@id="login_name"]'
@@ -96,11 +97,11 @@ logarGLPI()
 for i, chamadoID in enumerate(getPlanilhaGeral()):
   linha = i+2
   if(linha > 0):    
-    if(chamadoID[3] == "SIM"):
+    if(chamadoID[4] == "SIM"):
       print("Chamado já conferida:"+ chamadoID[1], linha)
       continue
 
-    elif(chamadoID[3] == "NÃO"):
+    elif(chamadoID[4] == "NÃO"):
       print("Entrando no chamado do GLPI de ID: "+chamadoID[0], linha)
       navegador.get("https://novoglpi.sms.maceio.al.gov.br/front/ticket.form.php?id="+chamadoID[0])
       if(navegador.find_elements(By.XPATH, "//*[contains(text(), 'Item não encontrado')]")):
@@ -113,16 +114,16 @@ for i, chamadoID in enumerate(getPlanilhaGeral()):
 
       tentativas = 0
       while(validandoCNS == False):    
-        #inserir para aguardar o elemento aparecer    
-        numeroCNS = WebDriverWait(navegador, 10).until(EC.visibility_of_element_located((By.NAME, "cnfield")))
-        #numeroCNS = navegador.find_element(By.NAME, "cnfield").get_attribute('value')
+        WebDriverWait(navegador, 10).until(EC.visibility_of_element_located((By.NAME, "cnfield")))
+
         try:
-          numeroCNS.get_attribute('value')
-          print(" | 0: "+chamadoID[0]+" | 1: "+chamadoID[1]+" | 2: "+chamadoID[2]+" | 3: "+chamadoID[3])
-          if(str(numeroCNS) == str(chamadoID[2])):
+          numeroCNS = navegador.find_element(By.NAME, "cnfield").get_attribute('value').strip()
+          print("-> DADOS DA PLANILHA - LINHA: "+str(linha)+"\nID_GLPI: "+chamadoID[0]+"\nNOME_PACIENTE: "+chamadoID[1]+"\nCNS: "+chamadoID[2]+"\nSTATUS HIGIENIZAÇÃO: "+chamadoID[3]+"\
+          \nCHAMADO CONFERIDO: "+chamadoID[4]+"\nCHAMADO CONFERINDO EM: "+chamadoID[5]+"\nSTATUS DO CHAMADO: "+chamadoID[6])
+          if(str(numeroCNS) == str(chamadoID[2]).strip()):
             print("CNS correto: "+chamadoID[2], numeroCNS)
             validandoCNS = True
-          elif(str(numeroCNS) != str(chamadoID[2])):
+          elif(str(numeroCNS) != str(chamadoID[2]).strip()):
             print("CNS diferente: "+chamadoID[2], numeroCNS)          
             validandoCNS = False        
             navegador.refresh()
@@ -141,47 +142,74 @@ for i, chamadoID in enumerate(getPlanilhaGeral()):
 
         if(valor.find(chamadoID[0]) != -1):
           print('Entrou no chamado do GLPI id:'+chamadoID[0])
-          time.sleep(10)
-
           
-          if navegador.find_elements(By.XPATH, "//*[contains(@title, 'Novo')]") or navegador.find_elements(By.XPATH, "//*[contains(@title, 'Processando (atribuído)')]")\
-          or navegador.find_elements(By.XPATH, "//*[contains(@title, 'Processando (Planejado)')]") or navegador.find_elements(By.XPATH, "//*[contains(@title, 'Pendente')]"):
-
-            navegador.execute_script("arguments[0].scrollIntoView();", navegador.find_element(By.XPATH, "//*[@name='plugin_fields_statushigienizaofielddropdowns_id']"))
-
+          dataHoraAtual = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+          print(str(dataHoraAtual))
+      
+          try:          
             WebDriverWait(navegador, 10).until(EC.visibility_of_element_located((By.XPATH, "//*[contains(text(), 'Data de Nascimento')]")))
-            time.sleep(10)
+            '''chamadoStatus = "Nenhum"
+            if navegador.find_element(By.XPATH, "//*[@class='me-1']//*[@data-bs-original-title='Novo']'"):
+              chamadoStatus = "Novo"
 
-            try:
+            elif navegador.find_element(By.XPATH, "//*[@class='me-1']//*[@data-bs-original-title='Em atendimento (atribuído)']"):
+              chamadoStatus = "Em atendimento (atribuído)"
 
-              campoStatusHigienizao = WebDriverWait(navegador, 10).until(EC.visibility_of_element_located((By.XPATH, "//*[@data-select2-id='47']")))
-              campoStatusHigienizao.click()
+            elif navegador.find_element(By.XPATH, "//*[@class='me-1']//*[@data-bs-original-title='Em atendimento (Planejado)']"):
+              chamadoStatus = "Em atendimento (Planejado)"
+
+            elif navegador.find_element(By.XPATH, "//*[@class='me-1']//*[@data-bs-original-title='Pendente']"):
+              chamadoStatus = "Pendente"
+
+            elif navegador.find_element(By.XPATH, "//*[@class='me-1']//*[@data-bs-original-title='Solucionado']"):
+              chamadoStatus = "Solucionado"
+
+            elif navegador.find_element(By.XPATH, "//*[@class='me-1']//*[@data-bs-original-title='Fechado']"):
+              chamadoStatus = "Fechado"
+            else:
+              chamadoStats = "ERRO-STATUS"'''
+              
+            if navegador.find_elements(By.XPATH, "//*[contains(@title, 'Novo')]") or navegador.find_elements(By.XPATH, "//*[contains(@title, 'Em atendimento (atribuído)')]")\
+            or navegador.find_elements(By.XPATH, "//*[contains(@title, 'Em atendimento (Planejado)')]") or navegador.find_elements(By.XPATH, "//*[contains(@title, 'Pendente')]"):
+          
+              #navegador.execute_script("document.body.style.zoom = '50%';")
+              #navegador.execute_script("arguments[0].scrollIntoView();", navegador.find_element(By.XPATH, "//*[@name='plugin_fields_gestantefielddropdowns_id']"))
+              #time.sleep(10)
 
               try:
-                selecionandoItem = WebDriverWait(navegador, 10).until(EC.visibility_of_element_located((By.XPATH, "//*[@title='Chamado higienizado - ']")))
+                campoStatusHigienizao = WebDriverWait(navegador, 10).until(EC.visibility_of_element_located((By.XPATH, "//*[@data-select2-id='47']")))
+                campoStatusHigienizao.click()
+              except Exception as e:
+                print("[ERRO]AO ABRIR A LISTA DOS STATUS DE HIGIENIZACAO: ", e)
+
+
+              try:
+                selecionandoItem = WebDriverWait(navegador, 10).until(EC.visibility_of_element_located((By.XPATH, "//*[@title='"+chamadoID[3]+"']")))
                 selecionandoItem.click()
 
-              except TimeoutException:
-                print("Erro ao abrir a lista suspensa!")
+              except Exception as e:
+                print("[ERRO]AO CLICAR NO STATUS DA LISTA HIGIENIZACAO: ", e)
                 continue
 
-              navegador.find_element(By.NAME, "update").click()
-              
-              #aguardandoAtualizarpagina = WebDriverWait(navegador, 20)
-              #aguardandoAtualizarpagina.until(EC.visibility_of_element_located((By.XPATH, "//*[@name='plugin_fields_statushigienizaofielddropdowns_id']//option[@title='Chamado higienizado - ']"))) 
-              #try:        
-              setCelulaPlanilha('BD_HIGIENIZACAO!', 'D'+str(linha), [["SIM"]])
-              print("[STATUS DO CHAMADO: ABERTO]LINHA ALTERADA: ", linha)
-              #except TimeoutException:
-                #print("Erro ao atualizar a página!")
-                #continue
+              campoWhatsApp = navegador.find_element(By.NAME, "whatsappfield")
+              if campoWhatsApp.get_attribute('value') == "": 
+                campoWhatsApp.send_keys("00000000000")
 
-            except TimeoutException:          
-              print('Não entrou no chamado do GLPI id:'+chamadoID[2])
-              setCelulaPlanilha('BD_HIGIENIZACAO!', 'D'+str(linha), [["ERRO AO CARREGAR A PÁGINA"]]) 
-              continue
-          else:
-            setCelulaPlanilha('BD_HIGIENIZACAO!', 'D'+str(linha), [["SIM"]])
-            print("[STATUS DO CHAMADO: FECHADO / SOLUCIONADO]LINHA ALTERADA: ", linha)
+              navegador.find_element(By.NAME, "update").click()    
+
+              setCelulaPlanilha('BD_HIGIENIZACAO!', 'E'+str(linha), [["SIM"]])
+              setCelulaPlanilha('BD_HIGIENIZACAO!', 'F'+str(linha), [[str(dataHoraAtual)]])
+              print("[STATUS DO CHAMADO: ABERTO]LINHA ALTERADA: ", linha)
+
+            else:
+              setCelulaPlanilha('BD_HIGIENIZACAO!', 'E'+str(linha), [["SIM"]])
+              setCelulaPlanilha('BD_HIGIENIZACAO!', 'F'+str(linha), [[str(dataHoraAtual)]])
+              print("[STATUS DO CHAMADO: FECHADO / SOLUCIONADO]LINHA ALTERADA: ", linha)
+
+          except TimeoutException:          
+            print('Não entrou no chamado do GLPI id:'+chamadoID[2])
+            setCelulaPlanilha('BD_HIGIENIZACAO!', 'E'+str(linha), [["ERRO AO CARREGAR A PÁGINA"]]) 
+            setCelulaPlanilha('BD_HIGIENIZACAO!', 'F'+str(linha), [[str(dataHoraAtual)]])
+            continue
 
 print('Chamados atualizados com sucesso! Por: mathewsfreire@gmail.com')
